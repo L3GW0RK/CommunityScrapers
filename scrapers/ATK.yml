@@ -4,39 +4,75 @@ sceneByURL:
     url:
       - atkhairy.com/tour/movie/
       - atkpetites.com/tour/movie/
+      - atkexotics.com/tour/movie
+      - amkingdom.com/tour/movie
       - atkpremium.com/tour/movie/
+      - atkgalleria.com/tour/photo
       - atkarchives.com/tour/movie/
+      - atkgirlfriends.com/tour/movie
     scraper: sceneScraper
 galleryByURL:
   - action: scrapeXPath
     url:
       - atkhairy.com/tour/photo/
       - atkpetites.com/tour/photo/
+      - atkexotics.com/tour/photo
+      - amkingdom.com/tour/photo
+      - atkgalleria.com/tour/photo
+      - atkgirlfriends.com/tour/photo
       - atkpremium.com/tour/photo/
       - atkarchives.com/tour/photo/
     scraper: galleryScraper
+
 xPathScrapers:
   sceneScraper:
     scene:
       Studio:
         Name:
-          selector: //span[@class='login']/a/@href
+          selector: //div[@class='statement']/a[contains(@href,'2257')]/@href
           postProcess:
             - replace:
-                - regex: .+join\.([^\.]+).+
+                - regex: (?:.+www\.)(.+)(?:\.com.+)
                   with: $1
-            - map:
-                atkhairy: "ATK Natural & Hairy"
-                atkpetites: "ATK Petites"
-                atkpremium: "ATK Premium"
-                atkarchives: "ATK Archives"
+                - regex: "amkingdom"
+                  with: "ATK Galleria"
+                - regex: "atkexotics"
+                  with: "ATK Exotics"
+                - regex: "atkpremium"
+                  with: "ATK Premium"
+                - regex: "atkgalleria"
+                  with: "ATK Galleria"
+                - regex: "atkhairy"
+                  with: "ATK Natural & Hairy"
+                - regex: "atkpetites"
+                  with: "ATK Petites"
+                - regex: "atkarchives"
+                  with: "ATK Archives"
       Performers:
         Name: //div[@class='watchName']//text()
-      Title: //title/text()
-      Details: //div[contains(@class,'video-description')]//text()[not(contains(.,'Description'))]
+      Title:
+        selector: //title/text()
+        postProcess:
+          - replace:
+              - regex: ^ATK.+\:\s
+                with:
+              - regex: '\.$'
+                with: ""
+      Details:
+        selector: //meta[contains(@name,'description')]/@content|//*[contains(text(),'Description')]//following-sibling::text()[1]
+        postProcess:
+          - replace:
+              - regex: '"'
+                with: ""
+      Director:
+        selector: //*[contains(text(),'Photographer')]//following-sibling::text()[not(contains(.,'Photographer'))][1]|//*[contains(@class,'photographer')]//*[contains(@class,'text')]/text()
       Tags:
         Name:
-          selector: //div[@class='video-tags tour_box left']/text()
+          selector: //*[contains(text(),'Tags')]//following-sibling::text()[1] | //*[contains(text(),'Movie:')]//following-sibling::text()[1]
+          postProcess:
+            - replace:
+                - regex: '\.$'
+                  with: ""
           split: " , "
       Image:
         selector: //div[@id='movie-poster']/@style
@@ -45,36 +81,64 @@ xPathScrapers:
               - regex: .+(?:url\(")(.+)(?:".+)
                 with: $1
       Code:
-        selector: //source[@type="video/mp4"]/@src|//div[@id="movie-poster"]/@style
+        selector: //div[contains(@class,'flowplayer')]/@style
         postProcess:
           - replace:
-              - regex: .+\/[a-z]\/[a-z]{3}[0-9]{3}\/(\d+)\/.*
-                with: $1
+              - regex: "^.*_"
+                with: ""
+              - regex: '\d{1,3}\.(jpg|png|jpeg|webp|jfif)(.*)$'
+                with: ""
+
   galleryScraper:
     gallery:
       Studio:
         Name:
-          selector: //span[@class='login']/a/@href
+          selector: //div[@class='statement']/a[contains(@href,'2257')]/@href
           postProcess:
             - replace:
-                - regex: .+join\.([^\.]+).+
+                - regex: (?:.+www\.)(.+)(?:\.com.+)
                   with: $1
-            - map:
-                atkhairy: "ATK Natural & Hairy"
-                atkpetites: "ATK Petites"
-                atkpremium: "ATK Premium"
-                atkarchives: "ATK Archives"
+                - regex: "amkingdom"
+                  with: "ATK Galleria"
+                - regex: "atkexotics"
+                  with: "ATK Exotics"
+                - regex: "atkpremium"
+                  with: "ATK Premium"
+                - regex: "atkgalleria"
+                  with: "ATK Galleria"
+                - regex: "atkhairy"
+                  with: "ATK Natural & Hairy"
+                - regex: "atkpetites"
+                  with: "ATK Petites"
+                - regex: "atkarchives"
+                  with: "ATK Archives"
+      Photographer:
+        selector: //*[contains(text(),'Photographer')]//following-sibling::text()[not(contains(.,'Photographer'))][1]|//*[contains(@class,'photographer')]//*[contains(@class,'text')]/text()
+      Tags:
+        Name:
+          selector: //*[contains(text(),'Tags')]//following-sibling::text()[1] | //*[contains(text(),'Movie:')]//following-sibling::text()[1]
+          postProcess:
+            - replace:
+                - regex: '\.$'
+                  with: ""
+          split: " , "
 
       Title:
         selector: //title/text()
         postProcess:
           - replace:
               - regex: ^ATK.+\:\s
-                with: 
+                with:
+              - regex: '\.$'
+                with: ""
       Performers:
         Name: //span[contains(text(),"Name:")]/following-sibling::text()
-      Photographer: //span[contains(text(),"Photographer:")]/following-sibling::text()
-      Details: //div[contains(text(),"Descriptions:")]/following-sibling::h1
+      Details:
+        selector: //meta[contains(@name,'description')]/@content|//*[contains(text(),'Description')]//following-sibling::text()[1]
+        postProcess:
+          - replace:
+              - regex: '"'
+                with: ""
       Code:
         selector: //img[contains(@alt,' Set')]/@src[1]
         postProcess:
@@ -83,4 +147,4 @@ xPathScrapers:
                 with: $1
 driver:
   useCDP: true
-# Last Updated May 12, 2024
+# Last Updated July 23, 2024
